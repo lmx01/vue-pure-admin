@@ -5,6 +5,7 @@ import type { PaginationProps } from "@pureadmin/table";
 import ThumbUp from "@iconify-icons/ri/thumb-up-line";
 import Hearts from "@iconify-icons/ri/hearts-line";
 import Empty from "./empty.svg?component";
+import { getBookUserList } from "@/api/stu";
 
 export function useColumns() {
   const dataList = ref([]);
@@ -87,10 +88,23 @@ export function useColumns() {
     });
   }
 
-  onMounted(() => {
-    dataList.value = tableData;
-    pagination.total = dataList.value.length;
+  const getUserListData = async () => {
+  try {
+    const { data } = await getBookUserList();
+    dataList.value = data.list;
+    dataList.value = {
+      ...dataList.value,
+    };
+    pagination.total = data.len;
+  } catch (e) {
+    console.log(e);
+  } finally {
     loading.value = false;
+  }
+};
+
+  onMounted(() => {
+    getUserListData();
   });
 
   return {
