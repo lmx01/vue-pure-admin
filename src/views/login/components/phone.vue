@@ -10,6 +10,9 @@ import { useVerifyCode } from "../utils/verifyCode";
 import { useUserStoreHook } from "@/store/modules/user";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import Iphone from "@iconify-icons/ep/iphone";
+import { getVerifyCode } from "@/api/user";
+import { initRouter, getTopMenu } from "@/router/utils";
+import { useRouter } from "vue-router";
 
 const { t } = useI18n();
 const loading = ref(false);
@@ -18,18 +21,29 @@ const ruleForm = reactive({
   verifyCode: ""
 });
 const ruleFormRef = ref<FormInstance>();
+const router = useRouter();
 const { isDisabled, text } = useVerifyCode();
-
+let verifyId = "";
 const onLogin = async (formEl: FormInstance | undefined) => {
   loading.value = true;
   if (!formEl) return;
-  await formEl.validate((valid, fields) => {
+  await formEl.validate(async (valid, fields) => {
     if (valid) {
-      // 模拟登录请求，需根据实际开发进行修改
-      setTimeout(() => {
-        message(transformI18n($t("login.loginSuccess")), { type: "success" });
-        loading.value = false;
-      }, 2000);
+      useUserStoreHook()
+        .loginByPhone(ruleForm.phone, ruleForm.verifyCode, verifyId)
+        .then(res => {
+          if (res.k_error === 0) {
+            return initRouter().then(() => {
+              console.log("login successful,go to :", getTopMenu(true).path);
+              router.push(getTopMenu(true).path);
+              message("登录成功", { type: "success" });
+            });
+          }
+        })
+        .catch(e => {
+          message(e, { type: "error" });
+        })
+        .finally(() => (loading.value = false));
     } else {
       loading.value = false;
       return fields;
@@ -41,6 +55,20 @@ function onBack() {
   useVerifyCode().end();
   useUserStoreHook().SET_CURRENTPAGE(0);
 }
+
+const onVerifyCode = async ruleFormRef => {
+  useVerifyCode().start(ruleFormRef, "phone");
+  try {
+    const { data } = await getVerifyCode(ruleForm.phone);
+    if (data.result === 0) {
+      verifyId = data.verify_id;
+    }
+  } catch (e) {
+    console.log(e);
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <template>
@@ -68,7 +96,7 @@ function onBack() {
           <el-button
             :disabled="isDisabled"
             class="ml-2"
-            @click="useVerifyCode().start(ruleFormRef, 'phone')"
+            @click="onVerifyCode(ruleFormRef)"
           >
             {{
               text.length > 0
@@ -90,14 +118,6 @@ function onBack() {
           @click="onLogin(ruleFormRef)"
         >
           {{ t("login.login") }}
-        </el-button>
-      </el-form-item>
-    </Motion>
-
-    <Motion :delay="200">
-      <el-form-item>
-        <el-button class="w-full" size="default" @click="onBack">
-          {{ t("login.back") }}
         </el-button>
       </el-form-item>
     </Motion>

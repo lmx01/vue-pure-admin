@@ -17,6 +17,8 @@ export interface DataInfo<T> {
 
 export const userKey = "user-info";
 export const TokenKey = "authorized-token";
+export const UidKey = "uid";
+export const SidKey = "sid";
 /**
  * 通过`multiple-tabs`是否在`cookie`中，判断用户是否已经登录系统，
  * 从而支持多标签页打开已经登录的系统后无需再登录。
@@ -31,6 +33,14 @@ export function getToken(): DataInfo<number> {
   return Cookies.get(TokenKey)
     ? JSON.parse(Cookies.get(TokenKey))
     : storageLocal().getItem(userKey);
+}
+
+export function getUid(): number {
+  return storageLocal().getItem(UidKey);
+}
+
+export function getSid(): number {
+  return storageLocal().getItem(SidKey);
 }
 
 /**
@@ -63,6 +73,18 @@ export function setToken(data: DataInfo<Date>) {
   );
 
   function setUserKey(username: string, roles: Array<string>) {
+    const { isRemembered, loginDay } = useUserStoreHook();
+
+    Cookies.set(
+      multipleTabsKey,
+      "true",
+      isRemembered
+        ? {
+            expires: 10000
+          }
+        : {}
+    );
+
     useUserStoreHook().SET_USERNAME(username);
     useUserStoreHook().SET_ROLES(roles);
     storageLocal().setItem(userKey, {
@@ -83,6 +105,37 @@ export function setToken(data: DataInfo<Date>) {
       storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [];
     setUserKey(username, roles);
   }
+}
+
+export function setUid(uid: number) {
+  storageLocal().setItem(UidKey, uid);
+}
+
+export function setSid(sid: string) {
+  storageLocal().setItem(SidKey, sid);
+}
+
+export function setUserKey(
+  username: string,
+  sid: string,
+  leftDays:number,
+  roles: Array<string>
+) {
+  useUserStoreHook().SET_USERNAME(username);
+  useUserStoreHook().SET_ROLES(roles);
+  Cookies.set(
+      multipleTabsKey,
+      "true",
+      {
+        expires: leftDays
+      }
+    );
+  storageLocal().setItem(userKey, {
+    refreshToken: sid,
+    username,
+    roles,
+    expires:leftDays
+  });
 }
 
 /** 删除`token`以及key值为`user-info`的localStorage信息 */

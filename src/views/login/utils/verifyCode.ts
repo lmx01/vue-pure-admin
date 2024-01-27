@@ -14,7 +14,7 @@ export const useVerifyCode = () => {
   ) => {
     if (!formEl) return;
     const initTime = clone(time, true);
-    await formEl.validateField(props, isValid => {
+    await formEl.validateField(props, async isValid => {
       if (isValid) {
         clearInterval(timer.value);
         isDisabled.value = true;

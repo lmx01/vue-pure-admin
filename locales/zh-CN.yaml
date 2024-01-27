@@ -145,6 +145,7 @@ login:
   readAccept: 我已仔细阅读并接受
   privacyPolicy: 《隐私政策》
   getVerifyCode: 获取验证码
+  errorVerifyCode: 验证码错误
   info: 秒后重新获取
   usernameReg: 请输入账号
   passwordReg: 请输入密码

@@ -4,8 +4,8 @@ import type { FormRules } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
 import { useUserStoreHook } from "@/store/modules/user";
 
-/** 6位数字验证码正则 */
-export const REGEXP_SIX = /^\d{6}$/;
+/** 4位数字以上验证码正则 */
+export const REGEXP_SIX = /^\d{4,}$/;
 
 /** 密码正则（密码格式应为8-18位数字、字母、符号的任意两种组合） */
 export const REGEXP_PWD =
@@ -43,6 +43,8 @@ const loginRules = reactive<FormRules>({
   ]
 });
 
+const isLiaoAccount = (input: string): boolean => /^123\d{8}$/.test(input);
+
 /** 手机登录校验 */
 const phoneRules = reactive<FormRules>({
   phone: [
@@ -50,7 +52,7 @@ const phoneRules = reactive<FormRules>({
       validator: (rule, value, callback) => {
         if (value === "") {
           callback(new Error(transformI18n($t("login.phoneReg"))));
-        } else if (!isPhone(value)) {
+        } else if (!isPhone(value) && !isLiaoAccount(value)) {
           callback(new Error(transformI18n($t("login.phoneCorrectReg"))));
         } else {
           callback();

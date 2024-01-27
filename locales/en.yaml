@@ -145,6 +145,7 @@ login:
   readAccept: I have read it carefully and accept
   privacyPolicy: Privacy Policy
   getVerifyCode: Get VerifyCode
+  errorVerifyCode: Wrong VerifyCode
   info: Seconds
   usernameReg: Please enter username
   passwordReg: Please enter password

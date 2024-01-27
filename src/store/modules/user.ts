@@ -4,10 +4,19 @@ import type { userType } from "./types";
 import { routerArrays } from "@/layout/types";
 import { router, resetRouter } from "@/router";
 import { storageLocal } from "@pureadmin/utils";
-import { getLogin, refreshTokenApi } from "@/api/user";
-import type { UserResult, RefreshTokenResult } from "@/api/user";
+import { getLogin, getLoginByPhone, refreshTokenApi } from "@/api/user";
+import type { UserResult, LoginResult, RefreshTokenResult } from "@/api/user";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
-import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
+import {
+  type DataInfo,
+  setToken,
+  removeToken,
+  userKey,
+  setUid,
+  setSid,
+  setUserKey
+} from "@/utils/auth";
+import { $t, transformI18n } from "@/plugins/i18n";
 
 export const useUserStore = defineStore({
   id: "pure-user",
@@ -19,7 +28,7 @@ export const useUserStore = defineStore({
     // 前端生成的验证码（按实际需求替换）
     verifyCode: "",
     // 判断登录页面显示哪个组件（0：登录（默认）、1：手机登录、2：二维码登录、3：注册、4：忘记密码）
-    currentPage: 0,
+    currentPage: 1,
     // 是否勾选了登录页的免登录
     isRemembered: false,
     // 登录页的免登录存储几天，默认7天
@@ -58,6 +67,25 @@ export const useUserStore = defineStore({
             if (data) {
               setToken(data.data);
               resolve(data);
+            }
+          })
+          .catch(error => {
+            reject(error);
+          });
+      });
+    },
+    async loginByPhone(phone, verifyCode, verifyId) {
+      return new Promise<LoginResult>((resolve, reject) => {
+        getLoginByPhone(phone, verifyCode, verifyId)
+          .then(res => {
+            const { data } = res;
+            if (data.result === 0) {
+              setUid(data.uid);
+              setSid(data.sid);
+              setUserKey(data.uid + "", data.sid, data.left_days, ["admin"]);
+              resolve(res);
+            } else {
+              reject(new Error(transformI18n($t("login.errorVerifyCode"))));
             }
           })
           .catch(error => {
