@@ -3,11 +3,8 @@ import { http } from "@/utils/http";
 type Result = {
   k_error: number;
   msg: string;
-  data?: {
-    len: number;
-    /** 列表数据 */
-    list: Array<any>;
-  };
+  len: number;
+  data?: Array<any>;
 };
 
 /** 卡片列表 */

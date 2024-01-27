@@ -14,88 +14,53 @@ export function useColumns() {
     {
       sortable: true,
       label: "序号",
-      prop: "id"
+      prop: "uid"
     },
     {
       sortable: true,
-      label: "需求人数",
-      prop: "requiredNumber",
-      filterMultiple: false,
-      filterClassName: "pure-table-filter",
-      filters: [
-        { text: "≥16000", value: "more" },
-        { text: "<16000", value: "less" }
-      ],
-      filterMethod: (value, { requiredNumber }) => {
-        return value === "more"
-          ? requiredNumber >= 16000
-          : requiredNumber < 16000;
-      }
+      label: "创建时间",
+      prop: "create_time"
     },
     {
       sortable: true,
-      label: "提问数量",
-      prop: "questionNumber"
+      label: "帐号",
+      prop: "phone_code"
     },
     {
       sortable: true,
-      label: "解决数量",
-      prop: "resolveNumber"
+      label: "剩余会员天数",
+      prop: "left_day"
     },
-    {
-      sortable: true,
-      label: "用户满意度",
-      minWidth: 100,
-      prop: "satisfaction",
-      cellRenderer: ({ row }) => (
-        <div class="flex justify-center w-full">
-          <span class="flex items-center w-[60px]">
-            <span class="ml-auto mr-2">{row.satisfaction}%</span>
-            <iconifyIconOffline
-              icon={row.satisfaction > 98 ? Hearts : ThumbUp}
-              color="#e85f33"
-            />
-          </span>
-        </div>
-      )
-    },
-    {
-      sortable: true,
-      label: "统计日期",
-      prop: "date"
-    },
-    {
-      label: "操作",
-      fixed: "right",
-      slot: "operation"
-    }
   ];
 
   /** 分页配置 */
   const pagination = reactive<PaginationProps>({
-    pageSize: 10,
+    pageSize: 20,
     currentPage: 1,
     layout: "prev, pager, next",
     total: 0,
     align: "center"
   });
 
-  function onCurrentChange(page: number) {
-    console.log("onCurrentChange", page);
+  function onCurrentChange(currentPage: number) {
+    console.log("onCurrentChange", currentPage);
     loading.value = true;
-    delay(300).then(() => {
-      loading.value = false;
-    });
+    getUserListData(currentPage);
   }
 
-  const getUserListData = async () => {
+  const getUserListData = async (currentPage:number) => {
   try {
-    const { data } = await getBookUserList();
-    dataList.value = data.list;
-    dataList.value = {
-      ...dataList.value,
-    };
-    pagination.total = data.len;
+    const { data, len } = await getBookUserList(
+      {
+        user_type: 'book',
+        class_id: 0,
+        filter: '',
+        page: currentPage,
+        limit: pagination.pageSize,
+        sort: ''
+      });
+    dataList.value = [...dataList.value,...data];
+    pagination.total = len;
   } catch (e) {
     console.log(e);
   } finally {
@@ -104,7 +69,7 @@ export function useColumns() {
 };
 
   onMounted(() => {
-    getUserListData();
+    getUserListData(pagination.currentPage);
   });
 
   return {

@@ -184,9 +184,9 @@ const optionsBasis: Array<OptionsType> = [
           }
         }"
       >
-        <el-card shadow="never" class="h-[580px]">
+        <el-card shadow="never" class="h-[90vh]">
           <div class="flex justify-between">
-            <span class="text-md font-medium">数据统计</span>
+            <span class="text-md font-medium">二维码用户</span>
           </div>
           <PureTable class="mt-3" />
         </el-card>
